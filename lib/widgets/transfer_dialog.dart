@@ -1,101 +1,71 @@
 import 'dart:io';
 
+import 'package:bank/provider/controller.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/user.dart';
 
 
-class PlaceDialog {
+class TransferDialog {
   final txtAmount = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
-  String imgCaptured = '';
 
-  final User user;
+  final User fromUser;
 
-  PlaceDialog(this.user);
+  TransferDialog(this.fromUser);
 
   Widget buildDialog(BuildContext context) {
+    String? dropdownValue = Provider.of<Controller>(context).dropdownValue;
     return AlertDialog(
-      title: const Text('Places'),
+      title: const Text('Transfer Money'),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
             children: [
+          DropdownButtonFormField<String>(
+          value: dropdownValue,
+            icon: const Icon(Icons.arrow_downward),
+            elevation: 16,
+            style: const TextStyle(color: Colors.deepPurple),
+            onChanged: (String? newValue) {
+              Provider.of<Controller>(context, listen: false).changeDropDown(newValue);
+            },
+            validator: (val) {
+              if (val == null) {
+                return 'choose user';
+              }
+            },
+            items: Provider.of<Controller>(context).users
+                .map<DropdownMenuItem<String>>((value) {
+              return DropdownMenuItem<String>(
+                value: value.name,
+                child: Text(value.name),
+              );
+            }).toList(),
+          ),
               TextFormField(
-                controller: txtName,
-                decoration: const InputDecoration(hintText: 'Name'),
-                validator: (val) {
-                  if (val!.isEmpty) {
-                    return 'Type valid Name';
-                  }
-                },
-              ),
-              TextFormField(
-                controller: txtLat,
-                decoration: const InputDecoration(hintText: 'Latitude'),
+                controller: txtAmount,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(hintText: 'Amount'),
                 validator: (val) {
                   if (val!.isEmpty || double.tryParse(val) == null) {
-                    return 'Type valid latitude';
+                    return 'Type a valid Amount';
                   }
                 },
               ),
-              TextFormField(
-                controller: txtLon,
-                decoration: const InputDecoration(hintText: 'Longitude'),
-                validator: (val) {
-                  if (val!.isEmpty || double.tryParse(val) == null) {
-                    return 'Type valid longitude';
-                  }
-                },
-              ),
-              Provider.of<Controller>(context).imagePath != null
-                  ? Container(
-                  child: Image.file(File(
-                      Provider.of<Controller>(context).imagePath!)))
-                  :
-              (place.image != '')
-                  ? Container(child: Image.file(File(place.image)))
-                  : Container(),
-              IconButton(
-                icon: const Icon(Icons.camera_front),
-                onPressed: () async {
-                  final path = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => CameraScreen(place)));
-                  imgCaptured = path;
-                },
-              ),
+
               ElevatedButton(
-                  child: const Text('Ok'),
+                  child: const Text('Transfer'),
                   onPressed: () async {
-                    if (!_formKey.currentState!.validate()) {
+                    if (!_formKey.currentState!.validate() || dropdownValue == null) {
                       return;
                     }
                     FocusScope.of(context).unfocus();
                     _formKey.currentState!.save();
-                    place.name = txtName.text;
-                    place.lat = double.tryParse(txtLat.text)!;
-                    place.lon = double.tryParse(txtLon.text)!;
-                    place.image = imgCaptured == '' ? place.image : imgCaptured;
-                    isNew
-                        ? await helper.insertPlace(place)
-                        : await helper.update(place);
-                    final pos = Position(
-                        longitude: place.lon,
-                        latitude: place.lat,
-                        timestamp: DateTime.now(),
-                        accuracy: 0,
-                        altitude: 0,
-                        heading: 0,
-                        speed: 0,
-                        speedAccuracy: 0);
-                    // Provider.of<Controller>(context, listen: false).addMarker(pos, placeId.toString(), place.name);
-                    Provider.of<Controller>(context, listen: false)
-                        .setImgToNull();
-                    Provider.of<Controller>(context, listen: false).getData();
-                    Navigator.pop(context);
+                    Provider.of<Controller>(context, listen: false).transfer(fromUser, double.parse(txtAmount.text));
+                    Navigator.of(context).pop();
                   })
             ],
           ),

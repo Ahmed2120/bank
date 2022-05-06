@@ -3,7 +3,7 @@ class User{
   final String name;
   final String email;
   final String address;
-  final double balance;
+  double balance;
 
   User(this.id, this.name, this.email, this.address, this.balance);
 

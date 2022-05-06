@@ -4,7 +4,7 @@ class Transfer{
   final String to;
   final double amount;
 
-  Transfer(this.from, this.to, this.amount, this.id);
+  Transfer(this.from, this.to, this.amount, {this.id});
 
   Transfer.fromJson(Map<String, dynamic> json)
       : id = json['id'],
