@@ -1,6 +1,6 @@
 # bank
 
-![bank app](https://user-images.githubusercontent.com/67471054/167504547-db587570-911a-4d30-aff5-390f1a4b7e98.gif)
+<p align="center"><img src="https://user-images.githubusercontent.com/67471054/167504547-db587570-911a-4d30-aff5-390f1a4b7e98.gif" width=200/>
 
 
 A new Flutter project.
